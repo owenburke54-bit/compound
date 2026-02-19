@@ -57,18 +57,18 @@ export default function NoteDetailSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-slate-900">
-      <div className="flex items-center justify-between p-4 border-b border-slate-700">
+    <div className="fixed inset-0 z-50 flex flex-col bg-slate-900 safe-area-pt">
+      <div className="flex items-center justify-between p-4 border-b border-slate-700 safe-area-pt">
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-white text-sm"
+          className="text-slate-400 active:text-white text-sm py-2 px-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           Cancel
         </button>
         <span className="text-slate-300 font-medium">Edit Note</span>
         <button
           onClick={handleSave}
-          className="text-sky-400 hover:text-sky-300 text-sm font-medium"
+          className="text-sky-400 active:text-sky-300 text-sm font-medium py-2 px-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           Save
         </button>
@@ -78,7 +78,7 @@ export default function NoteDetailSheet({
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="w-full min-h-[120px] p-3 bg-slate-800 rounded-lg text-white placeholder-slate-500 resize-none focus:outline-none focus:ring-1 focus:ring-sky-500"
+          className="w-full min-h-[120px] p-3 bg-slate-800 rounded-lg text-white placeholder-slate-500 resize-none focus:outline-none focus:ring-1 focus:ring-sky-500 text-base"
           placeholder="Note text..."
         />
 
@@ -87,7 +87,7 @@ export default function NoteDetailSheet({
             <p className="text-slate-400 text-sm mb-2">Suggested:</p>
             <button
               onClick={handleApplySuggestion}
-              className="px-3 py-1.5 bg-sky-600/30 text-sky-400 rounded-full text-sm hover:bg-sky-600/50"
+              className="px-4 py-2.5 bg-sky-600/30 text-sky-400 rounded-full text-sm active:bg-sky-600/50 min-h-[44px]"
             >
               {suggestedTopic.name}
             </button>
@@ -99,7 +99,7 @@ export default function NoteDetailSheet({
           <select
             value={topicId}
             onChange={(e) => setTopicId(e.target.value)}
-            className="w-full p-3 bg-slate-800 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="w-full p-3 bg-slate-800 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-sky-500 min-h-[44px] text-base"
           >
             {topicOptions.map((t) => (
               <option key={t.id} value={t.id}>
@@ -111,7 +111,7 @@ export default function NoteDetailSheet({
 
         <button
           onClick={handleDelete}
-          className="mt-6 text-red-400 hover:text-red-300 text-sm"
+          className="mt-6 text-red-400 active:text-red-300 text-sm py-2 px-2 min-h-[44px]"
         >
           Delete note
         </button>
