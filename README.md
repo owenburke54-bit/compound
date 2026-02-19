@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Compound
 
-## Getting Started
+A personal knowledge engine. Capture thoughts, store them locally, and use AI to suggest the best topic from your list. Offline-first for storage; AI classification requires internet.
 
-First, run the development server:
+## Setup
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build   # Uses --webpack for PWA/next-pwa compatibility
+npm start
+```
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+### OPENAI_API_KEY (required for AI classification)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Local:** Create `.env.local` and add `OPENAI_API_KEY=sk-your-key`
+- **Vercel:** In your Vercel project → Settings → Environment Variables, add `OPENAI_API_KEY` with your OpenAI API key. Apply to Production, Preview, and Development.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Install as PWA
 
-## Deploy on Vercel
+1. Open the app in Chrome (desktop or Android) or Safari (iOS)
+2. **Chrome/Android:** Click the install icon in the address bar, or Menu → "Install Compound"
+3. **Safari iOS:** Tap Share → "Add to Home Screen"
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The app works offline for viewing and adding notes. AI classification requires an internet connection.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Data Storage
+
+All notes and topics are stored **locally** in your browser using IndexedDB. Nothing is sent to a server except for AI classification requests (note text + topic list). Your data never leaves your device for storage.
+
+## Tech Stack
+
+- Next.js (App Router) + TypeScript + Tailwind
+- Dexie (IndexedDB)
+- PWA (manifest + service worker)
+- OpenAI API for topic classification
