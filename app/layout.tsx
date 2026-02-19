@@ -41,11 +41,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-900 text-slate-100 min-h-screen overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-900 text-slate-100 min-h-screen w-full overflow-x-hidden`}
       >
         <AppProvider>
-          <div className="max-w-md mx-auto min-h-screen flex flex-col bg-slate-900">
-            <main className="flex-1 pb-20 safe-area-pb">{children}</main>
+          <div className="min-h-screen w-full bg-slate-900 flex flex-col">
+            <main className="flex-1 w-full pb-20 safe-area-pb">{children}</main>
             <BottomNav />
           </div>
         </AppProvider>
