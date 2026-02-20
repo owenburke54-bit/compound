@@ -11,18 +11,23 @@ interface AddNoteSheetProps {
 
 export default function AddNoteSheet({ isOpen, onClose }: AddNoteSheetProps) {
   const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
   const { addNote, classifyNote } = useApp();
 
   const handleSave = async () => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const note = await addNote(trimmed);
-    setText("");
-    onClose();
-
-    if (navigator.onLine) {
-      classifyNote(note.id);
+    setSaving(true);
+    try {
+      const note = await addNote(trimmed);
+      if (navigator.onLine) {
+        await classifyNote(note.id);
+      }
+      setText("");
+      onClose();
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -40,10 +45,10 @@ export default function AddNoteSheet({ isOpen, onClose }: AddNoteSheetProps) {
         <span className="text-slate-300 font-medium">New Note</span>
         <button
           onClick={handleSave}
-          disabled={!text.trim()}
+          disabled={!text.trim() || saving}
           className="text-sky-400 active:text-sky-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium py-2 px-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
-          Save
+          {saving ? "…" : "Save"}
         </button>
       </div>
       <textarea

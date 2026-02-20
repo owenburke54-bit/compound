@@ -155,7 +155,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || "Classification failed");
+          const msg = (err as { error?: string })?.error || "Classification failed";
+          throw new Error(msg);
         }
 
         const result = (await res.json()) as {
@@ -186,8 +187,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           });
         }
         await refreshNotes();
-      } catch {
-        toast("Classification failed");
+      } catch (e) {
+        toast(e instanceof Error ? e.message : "Classification failed");
       }
     },
     [refreshNotes, toast]
