@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
+export const dynamic = "force-dynamic";
+
 const MAX_TEXT_LENGTH = 10000;
 const MAX_TOPICS = 100;
 const RATE_LIMIT_WINDOW_MS = 60_000;
@@ -32,22 +34,48 @@ function checkRateLimit(ip: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  const debugId = crypto.randomUUID?.() ?? String(Date.now());
+
   try {
+    const hasKey = Boolean(process.env.OPENAI_API_KEY);
+    if (!hasKey) {
+      console.error(`[${debugId}] Missing OPENAI_API_KEY`);
+      return NextResponse.json(
+        { error: "OpenAI API key not configured", debugId },
+        { status: 500 }
+      );
+    }
+
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
     if (!checkRateLimit(ip)) {
       return NextResponse.json(
-        { error: "Rate limit exceeded. Try again later." },
+        { error: "Rate limit exceeded. Try again later.", debugId },
         { status: 429 }
       );
     }
 
-    const body = await req.json();
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      console.error(`[${debugId}] Invalid JSON body`);
+      return NextResponse.json(
+        { error: "Invalid request body (must be JSON)", debugId },
+        { status: 400 }
+      );
+    }
 
-    const { text, topics, inboxTopicId } = body as {
+    const { text, topics, inboxTopicId } = (body ?? {}) as {
       text?: string;
       topics?: { id: string; name: string; category: string }[];
       inboxTopicId?: string;
     };
+
+    console.log(`[${debugId}] classify request`, {
+      textLen: typeof text === "string" ? text.length : null,
+      topicsCount: Array.isArray(topics) ? topics.length : null,
+      hasInbox: typeof inboxTopicId === "string",
+    });
 
     if (!text || typeof text !== "string") {
       return NextResponse.json(
@@ -97,15 +125,7 @@ export async function POST(req: NextRequest) {
       .map((t) => `- ${t.id}: "${t.name}" (${t.category})`)
       .join("\n");
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "OpenAI API key not configured" },
-        { status: 500 }
-      );
-    }
-
-    const openai = new OpenAI({ apiKey });
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
     const topicIdsStr = Array.from(validTopicIds).join(", ");
 
@@ -127,8 +147,9 @@ export async function POST(req: NextRequest) {
 
     const raw = completion.choices[0]?.message?.content?.trim();
     if (!raw) {
+      console.error(`[${debugId}] Empty OpenAI response`);
       return NextResponse.json(
-        { error: "No response from classifier" },
+        { error: "No response from classifier", debugId },
         { status: 500 }
       );
     }
@@ -136,9 +157,10 @@ export async function POST(req: NextRequest) {
     let result: { topicId: string; confidence: number; tags: string[] };
     try {
       result = JSON.parse(raw) as { topicId: string; confidence: number; tags: string[] };
-    } catch {
+    } catch (e) {
+      console.error(`[${debugId}] Model returned non-JSON:`, raw);
       return NextResponse.json(
-        { error: "Invalid classifier response" },
+        { error: "Invalid classifier response (non-JSON)", debugId, raw: raw.slice(0, 200) },
         { status: 500 }
       );
     }
@@ -152,10 +174,24 @@ export async function POST(req: NextRequest) {
     result.tags = Array.isArray(result.tags) ? result.tags.slice(0, 10) : [];
 
     return NextResponse.json(result);
-  } catch (err) {
-    console.error("Classify error:", err);
+  } catch (err: unknown) {
+    const e = err as { message?: string; status?: number; code?: string; response?: { text?: () => Promise<string> } };
+    console.error(`[${debugId}] Classify error:`, {
+      message: e?.message,
+      status: e?.status,
+      code: e?.code,
+    });
+    if (e?.response?.text) {
+      try {
+        const txt = await e.response.text();
+        console.error(`[${debugId}] OpenAI response body:`, txt?.slice(0, 500));
+      } catch {
+        // ignore
+      }
+    }
+    const msg = e?.message?.includes("API") ? e.message : "Classification failed";
     return NextResponse.json(
-      { error: "Classification failed" },
+      { error: msg, debugId },
       { status: 500 }
     );
   }

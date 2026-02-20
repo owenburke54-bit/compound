@@ -153,17 +153,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }),
         });
 
+        const rawText = await res.text();
+
         if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          const msg = (err as { error?: string })?.error || "Classification failed";
+          let msg = "Classification failed";
+          try {
+            const err = JSON.parse(rawText) as { error?: string; debugId?: string };
+            msg = err.error ?? msg;
+            if (err.debugId) console.error("[classify] error debugId:", err.debugId);
+          } catch {
+            console.error("[classify] non-JSON error response:", rawText.slice(0, 300));
+          }
           throw new Error(msg);
         }
 
-        const result = (await res.json()) as {
-          topicId: string;
-          confidence: number;
-          tags: string[];
-        };
+        let result: { topicId: string; confidence: number; tags: string[] };
+        try {
+          result = JSON.parse(rawText) as { topicId: string; confidence: number; tags: string[] };
+        } catch {
+          console.error("[classify] non-JSON success response:", rawText.slice(0, 300));
+          throw new Error("Invalid classifier response");
+        }
 
         const topic = allTopics.find((t) => t.id === result.topicId);
 
