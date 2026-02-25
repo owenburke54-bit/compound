@@ -34,9 +34,7 @@ export default function NoteList({
       ? notes.filter((n) => n.topicId === filterTopicId)
       : notes;
 
-  const unfiledCount = notes.filter(
-    (n) => n.topicId === INBOX_TOPIC_ID && n.unfiledOffline === true
-  ).length;
+  const inboxCount = notes.filter((n) => n.topicId === INBOX_TOPIC_ID).length;
 
   const handleNoteClick = (note: Note) => {
     setSelectedNote(note);
@@ -45,13 +43,13 @@ export default function NoteList({
 
   return (
     <div className="pb-20">
-      {showFileUnsorted && unfiledCount > 0 && navigator.onLine && (
+      {showFileUnsorted && inboxCount > 0 && navigator.onLine && (
         <div className="p-4 border-b border-slate-700">
           <button
             onClick={fileUnsortedNotes}
             className="w-full py-2 px-4 bg-sky-600/30 text-sky-400 rounded-lg text-sm font-medium hover:bg-sky-600/50"
           >
-            File {unfiledCount} unsorted note{unfiledCount !== 1 ? "s" : ""}
+            Try filing again
           </button>
         </div>
       )}

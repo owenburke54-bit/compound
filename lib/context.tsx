@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { db, type Note, type Topic } from "./db";
+import { classifyAndApply } from "./classify";
 import { INBOX_TOPIC_ID, generateId, seedIfEmpty } from "./seed";
 
 type ToastMessage = { id: string; text: string };
@@ -19,7 +20,7 @@ interface AppContextValue {
   addTopic: (name: string, category: string) => Promise<Topic>;
   updateTopic: (id: string, updates: Partial<Topic>) => Promise<void>;
   deleteTopic: (id: string) => Promise<void>;
-  classifyNote: (noteId: string) => Promise<void>;
+  classifyNote: (noteId: string) => void;
   fileUnsortedNotes: () => Promise<void>;
   getTopicById: (id: string) => Topic | undefined;
 }
@@ -133,73 +134,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const classifyNote = useCallback(
-    async (noteId: string) => {
-      const note = await db.notes.get(noteId);
-      if (!note || !navigator.onLine) return;
-
-      const allTopics = await db.topics.toArray();
-      const topicsForApi = allTopics
-        .filter((t) => t.id !== INBOX_TOPIC_ID)
-        .map((t) => ({ id: t.id, name: t.name, category: t.category }));
-
-      try {
-        const res = await fetch("/api/classify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: note.text,
-            topics: topicsForApi,
-            inboxTopicId: INBOX_TOPIC_ID,
-          }),
-        });
-
-        const rawText = await res.text();
-
-        if (!res.ok) {
-          let msg = "Classification failed";
-          try {
-            const err = JSON.parse(rawText) as { error?: string; debugId?: string };
-            msg = err.error ?? msg;
-            if (err.debugId) console.error("[classify] error debugId:", err.debugId);
-          } catch {
-            console.error("[classify] non-JSON error response:", rawText.slice(0, 300));
-          }
-          throw new Error(msg);
-        }
-
-        let result: { topicId: string; confidence: number; tags: string[] };
-        try {
-          result = JSON.parse(rawText) as { topicId: string; confidence: number; tags: string[] };
-        } catch {
-          console.error("[classify] non-JSON success response:", rawText.slice(0, 300));
-          throw new Error("Invalid classifier response");
-        }
-
-        const topic = allTopics.find((t) => t.id === result.topicId);
-
-        if (result.confidence >= 0.7 && topic) {
-          await db.notes.update(noteId, {
-            topicId: result.topicId,
-            suggestedTopicId: undefined,
-            confidence: undefined,
-            tags: result.tags?.length ? result.tags : undefined,
-            unfiledOffline: false,
-            updatedAt: Date.now(),
-          });
-          toast(`Filed under ${topic.name}`);
-        } else {
-          await db.notes.update(noteId, {
-            suggestedTopicId: result.topicId,
-            confidence: result.confidence,
-            tags: result.tags?.length ? result.tags : undefined,
-            unfiledOffline: false,
-            updatedAt: Date.now(),
-          });
-        }
-        await refreshNotes();
-      } catch (e) {
-        toast(e instanceof Error ? e.message : "Classification failed");
-      }
+    (noteId: string) => {
+      void classifyAndApply(noteId, {
+        onSuccess: (topicName) => toast(`Filed under ${topicName}`),
+        onNotesRefreshed: refreshNotes,
+      });
     },
     [refreshNotes, toast]
   );
@@ -210,18 +149,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const unsorted = await db.notes
+    const inboxNotes = await db.notes
       .where("topicId")
       .equals(INBOX_TOPIC_ID)
-      .filter((n) => n.unfiledOffline === true)
       .sortBy("createdAt");
 
-    const toProcess = unsorted.slice(0, 10).reverse();
+    const toProcess = inboxNotes.reverse().slice(0, 10);
     for (const note of toProcess) {
-      await classifyNote(note.id);
-    }
-    if (toProcess.length > 0) {
-      toast(`Filed ${toProcess.length} note(s)`);
+      classifyNote(note.id);
     }
   }, [classifyNote, toast]);
 

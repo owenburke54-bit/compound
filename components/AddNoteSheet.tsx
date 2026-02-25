@@ -21,11 +21,11 @@ export default function AddNoteSheet({ isOpen, onClose }: AddNoteSheetProps) {
     setSaving(true);
     try {
       const note = await addNote(trimmed);
-      if (navigator.onLine) {
-        await classifyNote(note.id);
-      }
       setText("");
       onClose();
+      if (navigator.onLine) {
+        classifyNote(note.id);
+      }
     } finally {
       setSaving(false);
     }

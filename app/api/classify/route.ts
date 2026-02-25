@@ -41,7 +41,11 @@ export async function POST(req: NextRequest) {
     if (!hasKey) {
       console.error(`[${debugId}] Missing OPENAI_API_KEY`);
       return NextResponse.json(
-        { error: "OpenAI API key not configured", debugId },
+        {
+          error:
+            "OPENAI_API_KEY is not set. Add it in Vercel → Settings → Environment Variables for Production AND Preview, then redeploy.",
+          debugId,
+        },
         { status: 500 }
       );
     }
@@ -189,7 +193,7 @@ export async function POST(req: NextRequest) {
         // ignore
       }
     }
-    const msg = e?.message?.includes("API") ? e.message : "Classification failed";
+    const msg = e?.message?.trim() || "Classification failed";
     return NextResponse.json(
       { error: msg, debugId },
       { status: 500 }
