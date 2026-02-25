@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import AddNoteSheet from "./AddNoteSheet";
+import { useAddNote } from "@/lib/addNoteContext";
 
 export default function AddNoteFAB() {
-  const [addOpen, setAddOpen] = useState(false);
+  const { openAddNote, isOpen, onClose } = useAddNote();
 
   return (
     <>
       <button
-        onClick={() => setAddOpen(true)}
+        onClick={openAddNote}
         className="fixed bottom-24 right-4 z-30 w-16 h-16 rounded-full bg-sky-500 text-white text-3xl flex items-center justify-center shadow-xl hover:bg-sky-600 active:scale-95 transition-transform touch-manipulation"
         style={{
           bottom: "calc(4rem + env(safe-area-inset-bottom, 0px))",
@@ -18,7 +18,7 @@ export default function AddNoteFAB() {
       >
         +
       </button>
-      <AddNoteSheet isOpen={addOpen} onClose={() => setAddOpen(false)} />
+      <AddNoteSheet isOpen={isOpen} onClose={onClose} />
     </>
   );
 }

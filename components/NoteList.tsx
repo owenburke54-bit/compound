@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useApp } from "@/lib/context";
+import { useAddNote } from "@/lib/addNoteContext";
 import type { Note } from "@/lib/db";
 import { INBOX_TOPIC_ID } from "@/lib/seed";
 import NoteDetailSheet from "./NoteDetailSheet";
@@ -73,6 +74,7 @@ export default function NoteList({
   showFileUnsorted = false,
 }: NoteListProps) {
   const { notes, getTopicById, fileUnsortedNotes, updateNote } = useApp();
+  const { openAddNote } = useAddNote();
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -182,8 +184,18 @@ export default function NoteList({
       </ul>
 
       {filtered.length === 0 && (
-        <div className="p-8 text-center text-slate-500 text-sm">
-          No notes yet. Tap + to add one.
+        <div className="p-8 text-center space-y-4">
+          <p className="text-slate-400 text-sm leading-relaxed">
+            {filterTopicId
+              ? "No notes in this topic yet."
+              : "Your thoughts live here. Add one to get started."}
+          </p>
+          <button
+            onClick={openAddNote}
+            className="py-3 px-6 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 active:scale-[0.98]"
+          >
+            {filterTopicId ? "Add a note" : "Add your first note"}
+          </button>
         </div>
       )}
 

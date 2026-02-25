@@ -20,6 +20,7 @@ export default function TopicsPage() {
       <TopicsManager
         showAddTopic={addTopicOpen}
         onAddTopicClose={() => setAddTopicOpen(false)}
+        onOpenAddTopic={() => setAddTopicOpen(true)}
       />
     </>
   );

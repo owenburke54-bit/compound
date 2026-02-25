@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/lib/context";
+import { AddNoteProvider } from "@/lib/addNoteContext";
 import BottomNav from "@/components/BottomNav";
 import AddNoteFAB from "@/components/AddNoteFAB";
+import OnboardingOverlay from "@/components/OnboardingOverlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,11 +47,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-900 text-slate-100 min-h-screen w-full overflow-x-hidden`}
       >
         <AppProvider>
-          <div className="min-h-screen w-full bg-slate-900 flex flex-col">
-            <main className="flex-1 w-full pb-20 safe-area-pb">{children}</main>
-            <BottomNav />
-            <AddNoteFAB />
-          </div>
+          <AddNoteProvider>
+            <div className="min-h-screen w-full bg-slate-900 flex flex-col">
+              <main className="flex-1 w-full pb-20 safe-area-pb">{children}</main>
+              <BottomNav />
+              <AddNoteFAB />
+              <OnboardingOverlay />
+            </div>
+          </AddNoteProvider>
         </AppProvider>
       </body>
     </html>

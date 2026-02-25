@@ -61,11 +61,13 @@ function useLongPress(
 interface TopicsManagerProps {
   showAddTopic?: boolean;
   onAddTopicClose?: () => void;
+  onOpenAddTopic?: () => void;
 }
 
 export default function TopicsManager({
   showAddTopic = false,
   onAddTopicClose = () => {},
+  onOpenAddTopic,
 }: TopicsManagerProps) {
   const router = useRouter();
   const { topics, addTopic, updateTopic, deleteTopic } = useApp();
@@ -329,8 +331,20 @@ export default function TopicsManager({
       </div>
 
       {categoriesToShow.length === 0 && (
-        <div className="p-8 text-center text-slate-500 text-sm">
-          {searchQuery.trim() ? "No topics match your search." : "No topics yet."}
+        <div className="p-8 text-center space-y-4">
+          <p className="text-slate-400 text-sm leading-relaxed">
+            {searchQuery.trim()
+              ? "No topics match your search."
+              : "Organize your thoughts with topics. Add one to get started."}
+          </p>
+          {!searchQuery.trim() && onOpenAddTopic && (
+            <button
+              onClick={onOpenAddTopic}
+              className="py-3 px-6 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 active:scale-[0.98]"
+            >
+              Add your first topic
+            </button>
+          )}
         </div>
       )}
 

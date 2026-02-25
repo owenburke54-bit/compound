@@ -2,11 +2,13 @@
 
 import { useState, useMemo } from "react";
 import { useApp } from "@/lib/context";
+import { useAddNote } from "@/lib/addNoteContext";
 import type { Note } from "@/lib/db";
 import NoteDetailSheet from "./NoteDetailSheet";
 
 export default function SearchView() {
   const { notes, topics, getTopicById } = useApp();
+  const { openAddNote } = useAddNote();
   const [query, setQuery] = useState("");
   const [topicFilter, setTopicFilter] = useState<string>("");
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -83,12 +85,24 @@ export default function SearchView() {
       </ul>
 
       {results.length === 0 && (
-        <div className="p-8 text-center text-slate-500 text-sm">
-          {query.trim()
-            ? "No matching notes."
-            : topicFilter
-              ? "No notes in this topic."
-              : "Type to search."}
+        <div className="p-8 text-center space-y-4">
+          <p className="text-slate-400 text-sm leading-relaxed">
+            {query.trim()
+              ? "No notes match that search. Try different words."
+              : topicFilter
+                ? "No notes in this topic yet."
+                : notes.length === 0
+                  ? "Add some notes first, then search to find them."
+                  : "Search your notes. Type to find anything."}
+          </p>
+          {!query.trim() && !topicFilter && notes.length === 0 && (
+            <button
+              onClick={openAddNote}
+              className="py-3 px-6 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 active:scale-[0.98]"
+            >
+              Add your first note
+            </button>
+          )}
         </div>
       )}
 
