@@ -7,6 +7,8 @@ export interface Topic {
   createdAt: number;
   updatedAt: number;
   isInbox?: boolean;
+  pinned?: boolean;
+  pinnedOrder?: number;
 }
 
 export interface Note {

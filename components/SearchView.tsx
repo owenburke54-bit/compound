@@ -14,11 +14,13 @@ export default function SearchView() {
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return notes;
+    let filtered = notes;
 
-    let filtered = notes.filter((n) =>
-      n.text.toLowerCase().includes(q)
-    );
+    if (q) {
+      filtered = filtered.filter((n) =>
+        n.text.toLowerCase().includes(q)
+      );
+    }
 
     if (topicFilter) {
       filtered = filtered.filter((n) => n.topicId === topicFilter);
@@ -82,7 +84,11 @@ export default function SearchView() {
 
       {results.length === 0 && (
         <div className="p-8 text-center text-slate-500 text-sm">
-          {query.trim() ? "No matching notes." : "Type to search."}
+          {query.trim()
+            ? "No matching notes."
+            : topicFilter
+              ? "No notes in this topic."
+              : "Type to search."}
         </div>
       )}
 

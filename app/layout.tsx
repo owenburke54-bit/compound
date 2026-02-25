@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/lib/context";
 import BottomNav from "@/components/BottomNav";
+import AddNoteFAB from "@/components/AddNoteFAB";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
           <div className="min-h-screen w-full bg-slate-900 flex flex-col">
             <main className="flex-1 w-full pb-20 safe-area-pb">{children}</main>
             <BottomNav />
+            <AddNoteFAB />
           </div>
         </AppProvider>
       </body>

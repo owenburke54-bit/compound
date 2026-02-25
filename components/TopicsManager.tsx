@@ -215,6 +215,22 @@ export default function TopicsManager({
     [topics]
   );
 
+  const pinnedCount = topics.filter((t) => t.pinned).length;
+
+  const handlePinToggle = useCallback(
+    async (t: Topic) => {
+      if (t.pinned) {
+        await updateTopic(t.id, { pinned: false, pinnedOrder: undefined });
+      } else if (pinnedCount >= 6) return;
+      else {
+        const maxOrder =
+          Math.max(0, ...topics.filter((x) => x.pinned).map((x) => x.pinnedOrder ?? 0)) + 1;
+        await updateTopic(t.id, { pinned: true, pinnedOrder: maxOrder });
+      }
+    },
+    [topics, pinnedCount, updateTopic]
+  );
+
   return (
     <div className="pb-20">
       {/* Search */}
@@ -301,6 +317,8 @@ export default function TopicsManager({
                         setMovingTopic(t);
                         setMenuTopicId(null);
                       }}
+                      onPinToggle={() => handlePinToggle(t)}
+                      pinnedCount={pinnedCount}
                     />
                   ))}
                 </div>
@@ -352,6 +370,8 @@ interface TopicRowProps {
   onRename: () => void;
   onDelete: () => void;
   onMoveCategory: () => void;
+  onPinToggle?: () => void;
+  pinnedCount?: number;
 }
 
 function TopicRow({
@@ -370,6 +390,8 @@ function TopicRow({
   onRename,
   onDelete,
   onMoveCategory,
+  onPinToggle,
+  pinnedCount = 0,
 }: TopicRowProps) {
   const anchorRef = useRef<HTMLDivElement>(null);
   const longPress = useLongPress(
@@ -432,6 +454,8 @@ function TopicRow({
               onRename={onRename}
               onDelete={onDelete}
               onMoveCategory={onMoveCategory}
+              onPinToggle={onPinToggle}
+              pinnedCount={pinnedCount}
               isInbox={isInbox}
             />
           )}

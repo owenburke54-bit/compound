@@ -11,7 +11,9 @@ interface TopicActionsMenuProps {
   onRename: () => void;
   onDelete: () => void;
   onMoveCategory: () => void;
+  onPinToggle?: () => void;
   isInbox: boolean;
+  pinnedCount?: number;
 }
 
 export default function TopicActionsMenu({
@@ -22,7 +24,9 @@ export default function TopicActionsMenu({
   onRename,
   onDelete,
   onMoveCategory,
+  onPinToggle,
   isInbox,
+  pinnedCount = 0,
 }: TopicActionsMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +58,17 @@ export default function TopicActionsMenu({
     >
       {!isInbox && (
         <>
+          {onPinToggle && (
+            <button
+              onClick={() => {
+                onPinToggle();
+                onClose();
+              }}
+              className="w-full px-4 py-2 text-left text-sm text-slate-200 hover:bg-slate-700"
+            >
+              {topic.pinned ? "Unpin from Notes" : pinnedCount >= 6 ? "Pin (max 6)" : "Pin to Notes"}
+            </button>
+          )}
           <button
             onClick={() => {
               onRename();

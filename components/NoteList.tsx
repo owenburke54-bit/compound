@@ -21,6 +21,53 @@ function formatDate(ts: number) {
   return d.toLocaleDateString();
 }
 
+interface NoteRowProps {
+  note: Note;
+  topic: { name: string } | undefined;
+  getTopicById: (id: string) => { name: string } | undefined;
+  updateNote: (id: string, updates: Partial<Note>) => Promise<void>;
+  formatDate: (ts: number) => string;
+}
+
+function NoteRow({ note, topic, getTopicById, updateNote, formatDate }: NoteRowProps) {
+  return (
+    <>
+      <p className="text-slate-200 line-clamp-2">{note.text}</p>
+      <div className="flex items-center gap-2 mt-2 flex-wrap">
+        <span className="px-2 py-0.5 bg-slate-700 text-slate-400 rounded text-xs">
+          {topic?.name ?? "Unknown"}
+        </span>
+        {note.unfiledOffline && (
+          <span className="px-2 py-0.5 bg-amber-900/50 text-amber-400 rounded text-xs">
+            Unfiled (offline)
+          </span>
+        )}
+        {note.suggestedTopicId && !note.unfiledOffline && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const suggested = getTopicById(note.suggestedTopicId!);
+              if (suggested) {
+                updateNote(note.id, {
+                  topicId: note.suggestedTopicId!,
+                  suggestedTopicId: undefined,
+                  confidence: undefined,
+                });
+              }
+            }}
+            className="px-2 py-0.5 bg-sky-900/50 text-sky-400 rounded text-xs hover:bg-sky-900/70"
+          >
+            Suggested: {getTopicById(note.suggestedTopicId!)?.name}
+          </button>
+        )}
+        <span className="text-slate-500 text-xs ml-auto">
+          {formatDate(note.createdAt)}
+        </span>
+      </div>
+    </>
+  );
+}
+
 export default function NoteList({
   filterTopicId,
   showFileUnsorted = false,
@@ -34,7 +81,11 @@ export default function NoteList({
       ? notes.filter((n) => n.topicId === filterTopicId)
       : notes;
 
-  const inboxCount = notes.filter((n) => n.topicId === INBOX_TOPIC_ID).length;
+  const inboxNotes = notes.filter((n) => n.topicId === INBOX_TOPIC_ID);
+  const recentNotes = notes.filter((n) => n.topicId !== INBOX_TOPIC_ID);
+  const inboxCount = inboxNotes.length;
+  const showInboxRecent =
+    filterTopicId === undefined && (inboxNotes.length > 0 || recentNotes.length > 0);
 
   const handleNoteClick = (note: Note) => {
     setSelectedNote(note);
@@ -55,49 +106,79 @@ export default function NoteList({
       )}
 
       <ul className="divide-y divide-slate-800">
-        {filtered.map((note) => {
-          const topic = getTopicById(note.topicId);
-          return (
-            <li
-              key={note.id}
-              onClick={() => handleNoteClick(note)}
-              className="p-4 active:bg-slate-800/50 cursor-pointer"
-            >
-              <p className="text-slate-200 line-clamp-2">{note.text}</p>
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <span className="px-2 py-0.5 bg-slate-700 text-slate-400 rounded text-xs">
-                  {topic?.name ?? "Unknown"}
-                </span>
-                {note.unfiledOffline && (
-                  <span className="px-2 py-0.5 bg-amber-900/50 text-amber-400 rounded text-xs">
-                    Unfiled (offline)
-                  </span>
-                )}
-                {note.suggestedTopicId && !note.unfiledOffline && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const suggested = getTopicById(note.suggestedTopicId!);
-                      if (suggested) {
-                        updateNote(note.id, {
-                          topicId: suggested.id,
-                          suggestedTopicId: undefined,
-                          confidence: undefined,
-                        });
-                      }
-                    }}
-                    className="px-2 py-0.5 bg-sky-900/50 text-sky-400 rounded text-xs hover:bg-sky-900/70"
-                  >
-                    Suggested: {getTopicById(note.suggestedTopicId)?.name}
-                  </button>
-                )}
-                <span className="text-slate-500 text-xs ml-auto">
-                  {formatDate(note.createdAt)}
-                </span>
-              </div>
-            </li>
-          );
-        })}
+        {showInboxRecent ? (
+          <>
+            {inboxNotes.length > 0 && (
+              <>
+                <li className="px-4 py-2 text-slate-500 text-xs font-medium uppercase tracking-wide sticky top-12 z-[1] bg-slate-900/95 backdrop-blur border-b border-slate-800">
+                  Inbox
+                </li>
+                {inboxNotes.map((note) => {
+                  const topic = getTopicById(note.topicId);
+                  return (
+                    <li
+                      key={note.id}
+                      onClick={() => handleNoteClick(note)}
+                      className="p-4 active:bg-slate-800/50 cursor-pointer"
+                    >
+                      <NoteRow
+                        note={note}
+                        topic={topic}
+                        getTopicById={getTopicById}
+                        updateNote={updateNote}
+                        formatDate={formatDate}
+                      />
+                    </li>
+                  );
+                })}
+              </>
+            )}
+            {recentNotes.length > 0 && (
+              <>
+                <li className="px-4 py-2 text-slate-500 text-xs font-medium uppercase tracking-wide sticky top-12 z-[1] bg-slate-900/95 backdrop-blur border-b border-slate-800">
+                  Recent
+                </li>
+                {recentNotes.map((note) => {
+                  const topic = getTopicById(note.topicId);
+                  return (
+                    <li
+                      key={note.id}
+                      onClick={() => handleNoteClick(note)}
+                      className="p-4 active:bg-slate-800/50 cursor-pointer"
+                    >
+                      <NoteRow
+                        note={note}
+                        topic={topic}
+                        getTopicById={getTopicById}
+                        updateNote={updateNote}
+                        formatDate={formatDate}
+                      />
+                    </li>
+                  );
+                })}
+              </>
+            )}
+          </>
+        ) : (
+          filtered.map((note) => {
+            const topic = getTopicById(note.topicId);
+            return (
+              <li
+                key={note.id}
+                onClick={() => handleNoteClick(note)}
+                className="p-4 active:bg-slate-800/50 cursor-pointer"
+              >
+                <NoteRow
+                  note={note}
+                  topic={topic}
+                  getTopicById={getTopicById}
+                  updateNote={updateNote}
+                  formatDate={formatDate}
+                />
+              </li>
+            );
+          })
+        )}
       </ul>
 
       {filtered.length === 0 && (
