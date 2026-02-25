@@ -3,7 +3,7 @@ import { db, type Topic } from "./db";
 const INBOX_ID = "inbox";
 
 const DEFAULT_TOPICS: Omit<Topic, "createdAt" | "updatedAt">[] = [
-  { id: INBOX_ID, name: "Inbox", category: "Core", isInbox: true },
+  { id: INBOX_ID, name: "Inbox", category: "Inbox", isInbox: true },
   { id: "t1", name: "Things I Want to Learn", category: "Personal Development" },
   { id: "t2", name: "Skills to Develop", category: "Personal Development" },
   { id: "t3", name: "Habits to Build", category: "Personal Development" },

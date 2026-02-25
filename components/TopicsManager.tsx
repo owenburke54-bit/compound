@@ -7,6 +7,7 @@ import {
   useCallback,
   useRef,
 } from "react";
+import { useRouter } from "next/navigation";
 import { useApp } from "@/lib/context";
 import type { Topic } from "@/lib/db";
 import { INBOX_TOPIC_ID } from "@/lib/seed";
@@ -16,7 +17,7 @@ import MoveTopicSheet from "./MoveTopicSheet";
 import TopicActionsMenu from "./TopicActionsMenu";
 
 const DEFAULT_CATEGORIES = [
-  "Core",
+  "Inbox",
   "Personal Development",
   "Ideas & Creation",
   "Consumption",
@@ -66,6 +67,7 @@ export default function TopicsManager({
   showAddTopic = false,
   onAddTopicClose = () => {},
 }: TopicsManagerProps) {
+  const router = useRouter();
   const { topics, addTopic, updateTopic, deleteTopic } = useApp();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
@@ -105,7 +107,7 @@ export default function TopicsManager({
   const byCategory = useMemo(() => {
     const acc: Record<string, Topic[]> = {};
     for (const t of topics) {
-      const cat = t.category || "Uncategorized";
+      const cat = t.id === INBOX_TOPIC_ID ? "Inbox" : (t.category || "Uncategorized");
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(t);
     }
@@ -284,6 +286,7 @@ export default function TopicsManager({
                       setEditName={setEditName}
                       onSaveEdit={saveEdit}
                       onStartEdit={startEdit}
+                      onViewNotes={(id) => router.push(`/?topic=${id}`)}
                       onMenuToggle={() =>
                         setMenuTopicId(menuTopicId === t.id ? null : t.id)
                       }
@@ -341,6 +344,7 @@ interface TopicRowProps {
   setEditName: (v: string) => void;
   onSaveEdit: () => void;
   onStartEdit: (t: Topic) => void;
+  onViewNotes: (topicId: string) => void;
   onMenuToggle: () => void;
   onMenuClose: () => void;
   menuOpen: boolean;
@@ -358,6 +362,7 @@ function TopicRow({
   setEditName,
   onSaveEdit,
   onStartEdit,
+  onViewNotes,
   onMenuToggle,
   onMenuClose,
   menuOpen,
@@ -369,15 +374,17 @@ function TopicRow({
   const anchorRef = useRef<HTMLDivElement>(null);
   const longPress = useLongPress(
     () => !isInbox && onMenuToggle(),
-    () => {},
+    () => onViewNotes(topic.id),
     400
   );
 
   return (
     <div
       ref={anchorRef}
-      className="relative flex items-center pl-6 pr-2 py-2 min-h-[44px] group"
-      {...(isInbox ? {} : longPress)}
+      className="relative flex items-center pl-6 pr-2 py-2 min-h-[44px] group cursor-pointer"
+      {...(isInbox
+        ? { onClick: () => onViewNotes(topic.id) }
+        : longPress)}
     >
       {isEditing ? (
         <input
@@ -393,10 +400,9 @@ function TopicRow({
       ) : (
         <>
           <span
-            onClick={() => !isInbox && onStartEdit(topic)}
-            className={`flex-1 text-sm ${
+            className={`flex-1 text-sm cursor-pointer ${
               isHighlighted ? "text-sky-300 font-medium" : "text-slate-300"
-            }`}
+            } hover:text-white`}
           >
             {topic.name}
           </span>
