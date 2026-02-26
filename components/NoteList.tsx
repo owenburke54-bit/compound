@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useApp } from "@/lib/context";
 import { useAddNote } from "@/lib/addNoteContext";
+import { getAiSortingEnabled } from "@/lib/aiSettings";
 import type { Note } from "@/lib/db";
 import { INBOX_TOPIC_ID } from "@/lib/seed";
 import NoteDetailSheet from "./NoteDetailSheet";
@@ -96,13 +97,13 @@ export default function NoteList({
 
   return (
     <div className="pb-20">
-      {showFileUnsorted && inboxCount > 0 && navigator.onLine && (
+      {showFileUnsorted && inboxCount > 0 && navigator.onLine && getAiSortingEnabled() && (
         <div className="p-4 border-b border-slate-700">
           <button
             onClick={fileUnsortedNotes}
             className="w-full py-2 px-4 bg-sky-600/30 text-sky-400 rounded-lg text-sm font-medium hover:bg-sky-600/50"
           >
-            Try filing again
+            Sort {inboxCount} note{inboxCount !== 1 ? "s" : ""} with AI
           </button>
         </div>
       )}

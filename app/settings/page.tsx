@@ -9,16 +9,19 @@ import {
   loadDemoPack,
   removeDemoPack,
 } from "@/lib/demoPack";
+import { getAiSortingEnabled, setAiSortingEnabled } from "@/lib/aiSettings";
 import { db } from "@/lib/db";
 import Link from "next/link";
 
 export default function SettingsPage() {
   const { refreshNotes, refreshTopics, toast } = useApp();
   const [demoEnabled, setDemoEnabled] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setDemoEnabled(getHasDemoPack());
+    setAiEnabled(getAiSortingEnabled());
   }, []);
 
   const handleExportJson = async () => {
@@ -105,6 +108,38 @@ export default function SettingsPage() {
               className="w-full py-3 px-4 bg-slate-800 rounded-xl text-slate-200 text-sm text-left hover:bg-slate-700"
             >
               Export notes (CSV)
+            </button>
+          </div>
+        </section>
+
+        {/* AI sorting */}
+        <section>
+          <h2 className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-3">
+            AI
+          </h2>
+          <div className="flex items-center justify-between py-3 px-4 bg-slate-800 rounded-xl">
+            <div>
+              <p className="text-slate-200 text-sm font-medium">
+                AI topic sorting
+              </p>
+              <p className="text-slate-500 text-xs mt-0.5">
+                Suggests topics when you add notes (uses OpenAI)
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                const next = !aiEnabled;
+                setAiSortingEnabled(next);
+                setAiEnabled(next);
+                toast(next ? "AI sorting on" : "AI sorting off");
+              }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                aiEnabled
+                  ? "bg-sky-600/30 text-sky-400"
+                  : "bg-slate-700 text-slate-400"
+              }`}
+            >
+              {aiEnabled ? "On" : "Off"}
             </button>
           </div>
         </section>

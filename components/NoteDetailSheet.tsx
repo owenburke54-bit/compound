@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useApp } from "@/lib/context";
+import { getAiSortingEnabled } from "@/lib/aiSettings";
 import type { Note } from "@/lib/db";
 
 interface NoteDetailSheetProps {
@@ -17,7 +18,7 @@ export default function NoteDetailSheet({
 }: NoteDetailSheetProps) {
   const [text, setText] = useState("");
   const [topicId, setTopicId] = useState("");
-  const { updateNote, deleteNote, topics, getTopicById } = useApp();
+  const { updateNote, deleteNote, topics, getTopicById, classifyNote } = useApp();
 
   useEffect(() => {
     if (note) {
@@ -84,12 +85,26 @@ export default function NoteDetailSheet({
 
         {suggestedTopic && (
           <div className="mt-4">
-            <p className="text-slate-400 text-sm mb-2">Suggested:</p>
+            <p className="text-slate-400 text-sm mb-2">AI suggested:</p>
             <button
               onClick={handleApplySuggestion}
               className="px-4 py-2.5 bg-sky-600/30 text-sky-400 rounded-full text-sm active:bg-sky-600/50 min-h-[44px]"
             >
               {suggestedTopic.name}
+            </button>
+          </div>
+        )}
+
+        {getAiSortingEnabled() && navigator.onLine && (
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                classifyNote(note.id);
+                onClose();
+              }}
+              className="px-4 py-2.5 bg-slate-700 text-slate-300 rounded-full text-sm hover:bg-slate-600 active:bg-slate-500 min-h-[44px]"
+            >
+              File with AI
             </button>
           </div>
         )}

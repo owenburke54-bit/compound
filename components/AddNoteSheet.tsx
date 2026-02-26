@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useApp } from "@/lib/context";
-import { INBOX_TOPIC_ID } from "@/lib/seed";
+import { getAiSortingEnabled } from "@/lib/aiSettings";
 
 interface AddNoteSheetProps {
   isOpen: boolean;
@@ -23,7 +23,7 @@ export default function AddNoteSheet({ isOpen, onClose }: AddNoteSheetProps) {
       const note = await addNote(trimmed);
       setText("");
       onClose();
-      if (navigator.onLine) {
+      if (navigator.onLine && getAiSortingEnabled()) {
         classifyNote(note.id);
       }
     } finally {

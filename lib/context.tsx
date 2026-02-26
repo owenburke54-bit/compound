@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { db, type Note, type Topic } from "./db";
 import { classifyAndApply } from "./classify";
+import { getAiSortingEnabled } from "./aiSettings";
 import { INBOX_TOPIC_ID, generateId, seedIfEmpty } from "./seed";
 
 type ToastMessage = { id: string; text: string };
@@ -174,6 +175,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       mounted = false;
     };
   }, [refreshTopics, refreshNotes]);
+
+  // Auto-retry classification when back online
+  useEffect(() => {
+    const handleOnline = () => {
+      if (getAiSortingEnabled()) {
+        fileUnsortedNotes();
+      }
+    };
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, [fileUnsortedNotes]);
 
   const value: AppContextValue = {
     topics,
