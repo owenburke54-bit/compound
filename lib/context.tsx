@@ -139,6 +139,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       void classifyAndApply(noteId, {
         onSuccess: (topicName) => toast(`Filed under ${topicName}`),
         onNotesRefreshed: refreshNotes,
+        onError: (msg) => toast(msg || "Sorting failed"),
       });
     },
     [refreshNotes, toast]
@@ -156,6 +157,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .sortBy("createdAt");
 
     const toProcess = inboxNotes.reverse().slice(0, 10);
+    if (toProcess.length === 0) return;
+
+    toast("Sorting…");
     for (const note of toProcess) {
       classifyNote(note.id);
     }

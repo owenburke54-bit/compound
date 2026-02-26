@@ -6,6 +6,7 @@ const CONFIDENCE_THRESHOLD = 0.7;
 export type ClassifyCallbacks = {
   onSuccess: (topicName: string) => void;
   onNotesRefreshed: () => Promise<void>;
+  onError?: (message?: string) => void;
 };
 
 /**
@@ -17,7 +18,7 @@ export async function classifyAndApply(
   noteId: string,
   callbacks: ClassifyCallbacks
 ): Promise<void> {
-  const { onSuccess, onNotesRefreshed } = callbacks;
+  const { onSuccess, onNotesRefreshed, onError } = callbacks;
 
   const note = await db.notes.get(noteId);
   if (!note || !navigator.onLine) return;
@@ -41,16 +42,17 @@ export async function classifyAndApply(
     const rawText = await res.text();
 
     if (!res.ok) {
-      let debugId = "";
+      let message = "Sorting failed";
       try {
         const err = JSON.parse(rawText) as { error?: string; debugId?: string };
-        debugId = err.debugId ?? "";
+        message = err.error || message;
       } catch {
         // ignore
       }
       if (process.env.NODE_ENV === "development") {
-        console.warn("[classify] failed:", debugId || rawText.slice(0, 100));
+        console.warn("[classify] failed:", rawText.slice(0, 200));
       }
+      onError?.(message);
       return;
     }
 
@@ -65,6 +67,7 @@ export async function classifyAndApply(
       if (process.env.NODE_ENV === "development") {
         console.warn("[classify] invalid JSON response");
       }
+      onError?.("Sorting failed — invalid response");
       return;
     }
 
@@ -97,8 +100,10 @@ export async function classifyAndApply(
       await onNotesRefreshed();
     }
   } catch (e) {
+    const msg = e instanceof Error ? e.message : "Sorting failed";
     if (process.env.NODE_ENV === "development") {
-      console.warn("[classify] error:", e instanceof Error ? e.message : String(e));
+      console.warn("[classify] error:", msg);
     }
+    onError?.("Sorting failed — try again");
   }
 }
