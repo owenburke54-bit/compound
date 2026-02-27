@@ -261,7 +261,7 @@ export default function TopicsManager({
       </div>
 
       {/* Category cards */}
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-6">
         {categoriesToShow.map((cat) => {
           const items = filteredBySearch[cat] ?? [];
           const isExpanded = expandedCategories.has(cat);
@@ -269,11 +269,11 @@ export default function TopicsManager({
           return (
             <div
               key={cat}
-              className="rounded-xl border border-slate-700/80 bg-slate-800/40 overflow-hidden"
+              className="rounded-xl bg-slate-800/30 overflow-hidden"
             >
               <button
                 onClick={() => toggleCategory(cat)}
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-800/60 transition-colors"
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-800/50 transition-colors"
               >
                 <span className="font-semibold text-slate-100 text-base">
                   {cat}
@@ -293,7 +293,7 @@ export default function TopicsManager({
               </button>
 
               {isExpanded && (
-                <div className="border-t border-slate-700/60 divide-y divide-slate-700/40">
+                <div className="border-t border-slate-800/80 divide-y divide-slate-800/60">
                   {items.map((t) => (
                     <TopicRow
                       key={t.id}

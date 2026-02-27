@@ -17,9 +17,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  : "https://compound.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Compound",
-  description: "Personal knowledge engine - capture thoughts and organize by topic",
+  metadataBase: new URL(baseUrl),
+  title: "Compound — Personal Knowledge Base",
+  description: "Capture thoughts, organize by topic. Local-first, AI optional. Built with Next.js + IndexedDB + OpenAI.",
+  openGraph: {
+    title: "Compound — Personal Knowledge Base",
+    description: "Capture thoughts, organize by topic. Local-first, AI optional.",
+    type: "website",
+    images: ["/icons/icon-512.svg"],
+  },
+  icons: {
+    icon: "/icons/icon-192.svg",
+    apple: "/icons/icon-192.svg",
+  },
 };
 
 export const viewport: Viewport = {
@@ -49,7 +64,7 @@ export default function RootLayout({
         <AppProvider>
           <AddNoteProvider>
             <div className="min-h-screen w-full bg-slate-900 flex flex-col">
-              <main className="flex-1 w-full pb-20 safe-area-pb">{children}</main>
+              <main className="flex-1 w-full pb-20 safe-area-pb max-w-2xl mx-auto w-full">{children}</main>
               <BottomNav />
               <AddNoteFAB />
               <OnboardingOverlay />

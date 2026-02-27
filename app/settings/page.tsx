@@ -3,31 +3,23 @@
 import { useState, useEffect } from "react";
 import { useApp } from "@/lib/context";
 import { exportAndDownloadJson, exportAndDownloadCsv } from "@/lib/export";
-import {
-  getHasDemoPack,
-  setHasDemoPack,
-  loadDemoPack,
-  removeDemoPack,
-} from "@/lib/demoPack";
 import { getAiSortingEnabled, setAiSortingEnabled } from "@/lib/aiSettings";
 import { db } from "@/lib/db";
 import Link from "next/link";
 
 export default function SettingsPage() {
-  const { refreshNotes, refreshTopics, toast } = useApp();
-  const [demoEnabled, setDemoEnabled] = useState(false);
+  const { refreshNotes, refreshTopics, toast, getTopicById } = useApp();
   const [aiEnabled, setAiEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setDemoEnabled(getHasDemoPack());
     setAiEnabled(getAiSortingEnabled());
   }, []);
 
   const handleExportJson = async () => {
     try {
-      await exportAndDownloadJson();
-      toast("Export downloaded");
+      const filename = await exportAndDownloadJson();
+      toast(`Downloaded ${filename}`);
     } catch {
       toast("Export failed");
     }
@@ -35,8 +27,8 @@ export default function SettingsPage() {
 
   const handleExportCsv = async () => {
     try {
-      await exportAndDownloadCsv();
-      toast("CSV downloaded");
+      const filename = await exportAndDownloadCsv((id) => getTopicById(id)?.name);
+      toast(`Downloaded ${filename}`);
     } catch {
       toast("Export failed");
     }
@@ -50,32 +42,10 @@ export default function SettingsPage() {
       await db.topics.clear();
       await refreshNotes();
       await refreshTopics();
-      setHasDemoPack(false);
       toast("Data reset. Reload to reseed.");
       if (typeof window !== "undefined") window.location.reload();
     } catch {
       toast("Reset failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDemoToggle = async (enabled: boolean) => {
-    setLoading(true);
-    try {
-      if (enabled) {
-        await loadDemoPack();
-        await refreshNotes();
-        setDemoEnabled(true);
-        toast("Demo pack added");
-      } else {
-        await removeDemoPack();
-        await refreshNotes();
-        setDemoEnabled(false);
-        toast("Demo pack removed");
-      }
-    } catch {
-      toast("Demo toggle failed");
     } finally {
       setLoading(false);
     }
@@ -142,34 +112,9 @@ export default function SettingsPage() {
               {aiEnabled ? "On" : "Off"}
             </button>
           </div>
-        </section>
-
-        {/* Demo pack */}
-        <section>
-          <h2 className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-3">
-            Demo
-          </h2>
-          <div className="flex items-center justify-between py-3 px-4 bg-slate-800 rounded-xl">
-            <div>
-              <p className="text-slate-200 text-sm font-medium">
-                Demo note pack
-              </p>
-              <p className="text-slate-500 text-xs mt-0.5">
-                Add sample notes for demos or recruiters
-              </p>
-            </div>
-            <button
-              onClick={() => handleDemoToggle(!demoEnabled)}
-              disabled={loading}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                demoEnabled
-                  ? "bg-sky-600/30 text-sky-400"
-                  : "bg-slate-700 text-slate-400"
-              }`}
-            >
-              {demoEnabled ? "On" : "Off"}
-            </button>
-          </div>
+          <p className="text-slate-500 text-xs mt-2">
+            AI only runs when enabled. Notes are stored locally.
+          </p>
         </section>
 
         {/* Privacy */}
@@ -188,8 +133,9 @@ export default function SettingsPage() {
             About Compound
           </h2>
           <p className="text-slate-400 text-sm leading-relaxed py-2">
-            Compound is your personal knowledge base. Add notes, tag them with
-            topics, and find them later.
+            Local-first personal knowledge base. Add notes, tag them with topics,
+            find them later. AI sorting is optional. Built with Next.js + IndexedDB
+            + OpenAI.
           </p>
         </section>
 

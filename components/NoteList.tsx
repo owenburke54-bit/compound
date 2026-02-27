@@ -29,18 +29,23 @@ interface NoteRowProps {
   getTopicById: (id: string) => { name: string } | undefined;
   updateNote: (id: string, updates: Partial<Note>) => Promise<void>;
   formatDate: (ts: number) => string;
+  classifyNote?: (id: string) => void;
+  isInbox?: boolean;
 }
 
-function NoteRow({ note, topic, getTopicById, updateNote, formatDate }: NoteRowProps) {
+const topicChipClass =
+  "inline-flex items-center h-7 px-3 text-xs font-medium rounded-full border border-white/10 bg-white/5 text-slate-400";
+
+function NoteRow({ note, topic, getTopicById, updateNote, formatDate, classifyNote, isInbox }: NoteRowProps) {
   return (
     <>
       <p className="text-slate-200 line-clamp-2">{note.text}</p>
       <div className="flex items-center gap-2 mt-2 flex-wrap">
-        <span className="px-2 py-0.5 bg-slate-700 text-slate-400 rounded text-xs">
+        <span className={topicChipClass}>
           {topic?.name ?? "Unknown"}
         </span>
         {note.unfiledOffline && (
-          <span className="px-2 py-0.5 bg-amber-900/50 text-amber-400 rounded text-xs">
+          <span className={`${topicChipClass} border-amber-500/30 bg-amber-900/20 text-amber-400`}>
             Unfiled (offline)
           </span>
         )}
@@ -57,9 +62,20 @@ function NoteRow({ note, topic, getTopicById, updateNote, formatDate }: NoteRowP
                 });
               }
             }}
-            className="px-2 py-0.5 bg-sky-900/50 text-sky-400 rounded text-xs hover:bg-sky-900/70"
+            className={`${topicChipClass} border-sky-500/30 bg-sky-900/30 text-sky-400 hover:bg-sky-900/50`}
           >
             Suggested: {getTopicById(note.suggestedTopicId!)?.name}
+          </button>
+        )}
+        {isInbox && classifyNote && getAiSortingEnabled() && navigator.onLine && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              classifyNote(note.id);
+            }}
+            className={`${topicChipClass} hover:bg-white/10`}
+          >
+            Retry sort
           </button>
         )}
         <span className="text-slate-500 text-xs ml-auto">
@@ -74,7 +90,7 @@ export default function NoteList({
   filterTopicId,
   showFileUnsorted = false,
 }: NoteListProps) {
-  const { notes, getTopicById, fileUnsortedNotes, updateNote } = useApp();
+  const { notes, getTopicById, fileUnsortedNotes, updateNote, classifyNote } = useApp();
   const { openAddNote } = useAddNote();
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -98,13 +114,17 @@ export default function NoteList({
   return (
     <div className="pb-20">
       {showFileUnsorted && inboxCount > 0 && navigator.onLine && getAiSortingEnabled() && (
-        <div className="p-4 border-b border-slate-700">
+        <div className="p-4 border-b border-slate-800">
           <button
             onClick={fileUnsortedNotes}
+            title="Uses AI to suggest topics for Inbox notes. Optional — you can always file manually."
             className="w-full py-2 px-4 bg-sky-600/30 text-sky-400 rounded-lg text-sm font-medium hover:bg-sky-600/50"
           >
             Sort {inboxCount} note{inboxCount !== 1 ? "s" : ""} with AI
           </button>
+          <p className="text-slate-500 text-xs mt-1.5">
+            Optional. Suggests topics for Inbox notes.
+          </p>
         </div>
       )}
 
@@ -113,7 +133,7 @@ export default function NoteList({
           <>
             {inboxNotes.length > 0 && (
               <>
-                <li className="px-4 py-2 text-slate-500 text-xs font-medium uppercase tracking-wide sticky top-12 z-[1] bg-slate-900/95 backdrop-blur border-b border-slate-800">
+                <li className="px-4 py-2.5 text-slate-500 text-xs font-medium uppercase tracking-wider sticky top-12 z-[1] bg-slate-900/95 backdrop-blur border-b border-slate-800">
                   Inbox
                 </li>
                 {inboxNotes.map((note) => {
@@ -130,6 +150,8 @@ export default function NoteList({
                         getTopicById={getTopicById}
                         updateNote={updateNote}
                         formatDate={formatDate}
+                        classifyNote={classifyNote}
+                        isInbox
                       />
                     </li>
                   );
@@ -138,7 +160,7 @@ export default function NoteList({
             )}
             {recentNotes.length > 0 && (
               <>
-                <li className="px-4 py-2 text-slate-500 text-xs font-medium uppercase tracking-wide sticky top-12 z-[1] bg-slate-900/95 backdrop-blur border-b border-slate-800">
+                <li className="px-4 py-2.5 text-slate-500 text-xs font-medium uppercase tracking-wider sticky top-12 z-[1] bg-slate-900/95 backdrop-blur border-b border-slate-800">
                   Recent
                 </li>
                 {recentNotes.map((note) => {
@@ -189,13 +211,18 @@ export default function NoteList({
           <p className="text-slate-400 text-sm leading-relaxed">
             {filterTopicId
               ? "No notes in this topic yet."
-              : "Your thoughts live here. Add one to get started."}
+              : "Add your first thought."}
           </p>
+          {!filterTopicId && (
+            <p className="text-slate-500 text-xs">
+              Try: &quot;Watch Wedding Crashers&quot;
+            </p>
+          )}
           <button
             onClick={openAddNote}
             className="py-3 px-6 rounded-xl bg-sky-500 text-white text-sm font-medium hover:bg-sky-600 active:scale-[0.98]"
           >
-            {filterTopicId ? "Add a note" : "Add your first note"}
+            {filterTopicId ? "Add a note" : "Add your first thought"}
           </button>
         </div>
       )}

@@ -139,7 +139,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       void classifyAndApply(noteId, {
         onSuccess: (topicName) => toast(`Filed under ${topicName}`),
         onNotesRefreshed: refreshNotes,
-        onError: (msg) => toast(msg || "Sorting failed"),
+        onError: () => toast("Couldn't auto-sort. Saved to Inbox."),
       });
     },
     [refreshNotes, toast]
