@@ -23,14 +23,14 @@ export default function TopicChips({
   };
 
   const chipBase =
-    "px-3 py-1.5 rounded-full text-sm font-medium transition-colors";
+    "px-2.5 py-1 rounded-full text-xs font-medium transition-colors";
   const chipActive =
     "bg-sky-500 text-white";
   const chipInactive =
     "bg-slate-700 text-slate-300 hover:bg-slate-600";
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <Link
         href="/"
         className={`${chipBase} shrink-0 ${
