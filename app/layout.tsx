@@ -64,7 +64,7 @@ export default function RootLayout({
         <AppProvider>
           <AddNoteProvider>
             <div className="min-h-screen w-full bg-slate-900 flex flex-col">
-              <main className="flex-1 w-full pb-20 safe-area-pb max-w-2xl mx-auto w-full">{children}</main>
+              <main className="flex-1 w-full pb-20 safe-area-pb">{children}</main>
               <BottomNav />
               <AddNoteFAB />
               <OnboardingOverlay />
