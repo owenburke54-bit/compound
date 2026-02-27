@@ -15,17 +15,17 @@ function NotesContent() {
 
   return (
     <>
-      <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 pt-3">
-        <div className="flex items-center gap-2 pb-3">
+      <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 pt-3 pb-4">
+        <div className="flex items-center gap-2 mb-4">
           {topic ? (
             <>
               <Link href="/" className="text-slate-400 hover:text-white text-sm">
                 ←
               </Link>
-              <h1 className="text-lg font-semibold text-slate-100">{topic.name}</h1>
+              <h1 className="text-xl font-semibold tracking-tight text-slate-100">{topic.name}</h1>
             </>
           ) : (
-            <h1 className="text-lg font-semibold text-slate-100">Thoughts</h1>
+            <h1 className="text-xl font-semibold tracking-tight text-slate-100">Thoughts</h1>
           )}
         </div>
         <TopicChips activeTopicId={topicId} />
@@ -42,7 +42,7 @@ export default function NotesPage() {
   return (
     <Suspense fallback={
       <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3">
-        <h1 className="text-lg font-semibold text-slate-100">Thoughts</h1>
+        <h1 className="text-xl font-semibold tracking-tight text-slate-100">Thoughts</h1>
       </div>
     }>
       <NotesContent />

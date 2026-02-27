@@ -23,27 +23,23 @@ export default function TopicChips({
   };
 
   const chipBase =
-    "px-2.5 py-1 rounded-full text-xs font-medium transition-colors";
+    "h-9 px-4 text-sm rounded-full border transition-colors shrink-0 flex items-center justify-center";
   const chipActive =
-    "bg-sky-500 text-white";
+    "bg-cyan-500 text-slate-900 border-transparent";
   const chipInactive =
-    "bg-slate-700 text-slate-300 hover:bg-slate-600";
+    "bg-white/5 text-white/70 border-white/10 hover:bg-white/10";
 
   return (
-    <div className="flex gap-1.5 overflow-x-auto pb-2 -mx-4 px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex gap-3 overflow-x-auto -mx-4 px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <Link
         href="/"
-        className={`${chipBase} shrink-0 ${
-          isActive(null) ? chipActive : chipInactive
-        }`}
+        className={`${chipBase} ${isActive(null) ? chipActive : chipInactive}`}
       >
         All
       </Link>
       <Link
         href={`/?topic=${INBOX_TOPIC_ID}`}
-        className={`${chipBase} shrink-0 ${
-          isActive(INBOX_TOPIC_ID) ? chipActive : chipInactive
-        }`}
+        className={`${chipBase} ${isActive(INBOX_TOPIC_ID) ? chipActive : chipInactive}`}
       >
         Inbox
       </Link>
@@ -51,9 +47,7 @@ export default function TopicChips({
         <Link
           key={t.id}
           href={`/?topic=${t.id}`}
-          className={`${chipBase} shrink-0 ${
-            isActive(t.id) ? chipActive : chipInactive
-          }`}
+          className={`${chipBase} ${isActive(t.id) ? chipActive : chipInactive}`}
         >
           {t.name}
         </Link>

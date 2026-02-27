@@ -87,7 +87,7 @@ export default function SettingsPage() {
         <Link href="/" className="text-slate-400 hover:text-white text-sm">
           ←
         </Link>
-        <h1 className="text-lg font-semibold text-slate-100">Settings</h1>
+        <h1 className="text-xl font-semibold tracking-tight text-slate-100">Settings</h1>
       </div>
 
       <div className="p-4 pb-20 space-y-8">
